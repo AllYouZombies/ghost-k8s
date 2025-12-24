@@ -62,27 +62,27 @@ helm upgrade --install ghost . -n ghost -f values-prod.yaml
 
 ## Configuration
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `image.repository` | Ghost image | `ghost` |
-| `image.tag` | Ghost version | `6.10.3-alpine3.23` |
-| `ingress.enabled` | Enable ingress | `true` |
-| `ingress.host` | Blog hostname | `blog.example.com` |
-| `ingress.className` | Ingress class | `""` |
-| `ingressTLS.enabled` | Enable TLS | `false` |
-| `ingressTLS.secretName` | TLS secret name | `""` |
-| `ghost.url` | Site URL (auto from ingress.host if empty) | `""` |
-| `ghost.adminUrl` | Separate admin URL | `""` |
-| `mail.enabled` | Enable SMTP | `false` |
-| `mail.from` | From address | `"'Ghost' <noreply@example.com>"` |
-| `mail.options.host` | SMTP host | `""` |
-| `mail.options.port` | SMTP port | `587` |
-| `persistence.enabled` | Enable PVC | `true` |
-| `persistence.size` | PVC size | `10Gi` |
-| `persistence.storageClassName` | Storage class | `""` |
-| `resources.limits.memory` | Memory limit | `512Mi` |
-| `resources.limits.cpu` | CPU limit | `500m` |
-| `mariadb.enabled` | Deploy MariaDB | `true` |
+| Parameter                      | Description                                | Default                           |
+|--------------------------------|--------------------------------------------|-----------------------------------|
+| `image.repository`             | Ghost image                                | `ghost`                           |
+| `image.tag`                    | Ghost version                              | `6.10.3-alpine3.23`               |
+| `ingress.enabled`              | Enable ingress                             | `true`                            |
+| `ingress.host`                 | Blog hostname                              | `blog.example.com`                |
+| `ingress.className`            | Ingress class                              | `""`                              |
+| `ingressTLS.enabled`           | Enable TLS                                 | `false`                           |
+| `ingressTLS.secretName`        | TLS secret name                            | `""`                              |
+| `ghost.url`                    | Site URL (auto from ingress.host if empty) | `""`                              |
+| `ghost.adminUrl`               | Separate admin URL                         | `""`                              |
+| `mail.enabled`                 | Enable SMTP                                | `false`                           |
+| `mail.from`                    | From address                               | `"'Ghost' <noreply@example.com>"` |
+| `mail.options.host`            | SMTP host                                  | `""`                              |
+| `mail.options.port`            | SMTP port                                  | `587`                             |
+| `persistence.enabled`          | Enable PVC                                 | `true`                            |
+| `persistence.size`             | PVC size                                   | `10Gi`                            |
+| `persistence.storageClassName` | Storage class                              | `""`                              |
+| `resources.limits.memory`      | Memory limit                               | `512Mi`                           |
+| `resources.limits.cpu`         | CPU limit                                  | `500m`                            |
+| `mariadb.enabled`              | Deploy MariaDB                             | `true`                            |
 
 ## Example: Production with TLS
 
