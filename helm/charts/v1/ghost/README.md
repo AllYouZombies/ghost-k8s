@@ -11,13 +11,17 @@ helm dependency build .
 
 ### Prepare secrets
 
+```bash
+kubectl create namespace ghost
+```
+
 #### MariaDB secret (required)
 
 ```bash
 MARIADB_ROOT_PASSWORD=$(openssl rand -hex 32)
 MARIADB_PASSWORD=$(openssl rand -hex 32)
 
-kubectl create secret generic ghost-mariadb-secret \
+kubectl -n ghost create secret generic ghost-mariadb-secret \
   --from-literal=mariadb-root-password=$MARIADB_ROOT_PASSWORD \
   --from-literal=mariadb-password=$MARIADB_PASSWORD
 ```
@@ -27,7 +31,7 @@ kubectl create secret generic ghost-mariadb-secret \
 Required if you want Ghost to send transactional emails (member signups, password resets, staff invitations, Stripe receipts).
 
 ```bash
-kubectl create secret generic ghost-mail-secret \
+kubectl -n ghost create secret generic ghost-mail-secret \
   --from-literal=mail-user='your-smtp-username' \
   --from-literal=mail-password='your-smtp-password'
 ```
@@ -53,7 +57,7 @@ mail:
 ## Installation
 
 ```bash
-helm install ghost . -f values-prod.yaml
+helm upgrade --install ghost . -n ghost -f values-prod.yaml
 ```
 
 ## Configuration
