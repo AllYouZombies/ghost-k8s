@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "app.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   strategy:
     type: Recreate
   selector:
@@ -13,42 +13,112 @@ spec:
       {{- include "app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-env.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels:
-        {{- include "app.selectorLabels" . | nindent 8 }}
+        {{- include "app.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "app.serviceAccountName" . }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
           ports:
             - name: http
               containerPort: 2368
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: {{ printf "%s-env" (include "app.fullname" .) | trunc 63 | trimSuffix "-" }}
+                name: {{ include "app.fullname" . }}-env
           env:
+            {{- if .Values.mariadb.enabled }}
             - name: database__connection__password
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.mariadb.auth.existingSecret }}
                   key: {{ .Values.mariadb.auth.secretKeys.userPasswordKey }}
+            {{- end }}
+            {{- if and .Values.mail.enabled .Values.mail.auth.existingSecret }}
+            - name: mail__options__auth__user
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mail.auth.existingSecret }}
+                  key: {{ .Values.mail.auth.secretKeys.userKey }}
+            - name: mail__options__auth__pass
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.mail.auth.existingSecret }}
+                  key: {{ .Values.mail.auth.secretKeys.passwordKey }}
+            {{- end }}
           volumeMounts:
             - name: ghost-content
               mountPath: /var/lib/ghost/content
+          startupProbe:
+            httpGet:
+              path: /ghost/api/admin/site/
+              port: http
+              httpHeaders:
+                - name: X-Forwarded-Proto
+                  value: https
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
           livenessProbe:
             httpGet:
               path: /ghost/api/admin/site/
               port: http
-            initialDelaySeconds: 30
+              httpHeaders:
+                - name: X-Forwarded-Proto
+                  value: https
             periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /ghost/api/admin/site/
               port: http
-            initialDelaySeconds: 10
+              httpHeaders:
+                - name: X-Forwarded-Proto
+                  value: https
             periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
       volumes:
         - name: ghost-content
+          {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
             claimName: {{ include "app.fullname" . }}-content
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

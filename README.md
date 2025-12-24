@@ -6,4 +6,4 @@
 
 ### Dependencies
 
-- [CloudPirates/mariadb Helm Chart](https://artifacthub.io/packages/helm/cloudpirates-mariadb/mariadb)
+- [CloudPirates/mariadb](https://artifacthub.io/packages/helm/cloudpirates-mariadb/mariadb)  Helm Chart

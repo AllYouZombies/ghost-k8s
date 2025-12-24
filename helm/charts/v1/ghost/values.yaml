@@ -1,18 +1,72 @@
-
 nameOverride: ""
 fullnameOverride: ""
 
-service:
-  type: ClusterIP
-  port: 2368
+replicaCount: 1
 
 image:
   repository: ghost
   tag: 6.10.3-alpine3.23
   pullPolicy: IfNotPresent
 
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  name: ""
+  annotations: {}
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false  # Ghost needs to write to content dir
+  capabilities:
+    drop:
+      - ALL
+
+resources:
+  limits:
+    memory: 512Mi
+    cpu: 500m
+  requests:
+    memory: 256Mi
+    cpu: 100m
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+service:
+  type: ClusterIP
+  port: 2368
+  annotations: {}
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+    # kubernetes.io/tls-acme: "true"
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  host: blog.example.com
+
+ingressTLS:
+  enabled: false
+  secretName: ""
+
 persistence:
+  enabled: true
   size: 10Gi
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  annotations: {}
 
 mariadb:
   enabled: true
@@ -23,20 +77,28 @@ mariadb:
     secretKeys:
       rootPasswordKey: "mariadb-root-password"
       userPasswordKey: "mariadb-password"
-  persistence:
-    size: 10Gi
+  primary:
+    persistence:
+      size: 10Gi
 
-ingress:
-  host: "blog.example.com"
+mail:
+  enabled: false
+  transport: "SMTP"
+  from: "'Ghost' <noreply@example.com>"
+  options:
+    host: ""
+    port: 587
+    secure: false
+  auth:
+    existingSecret: ""
+    secretKeys:
+      userKey: "mail-user"
+      passwordKey: "mail-password"
 
-env:
-  NODE_ENV: "production"
-  url: "https://{{ .Values.ingress.host }}"
-  admin__url: ""
-  database__client: "mysql"
-  database__connection__host: '{{ include "app.fullname" . }}-mariadb'
-  database__connection__user: "{{ .Values.mariadb.auth.username }}"
-  database__connection__database: "{{ .Values.mariadb.auth.database }}"
-  tinybird__tracker__endpoint: "https://{{ .Values.ingress.host }}/.ghost/analytics/api/v1/page_hit"
-  tinybird__tracker__datasource: "analytics_events"
-  tinybird__stats__endpoint: "https://api.tinybird.co"
+ghost:
+  url: ""  # Will default to https://<ingress.host> if empty
+  adminUrl: ""  # Optional: separate admin domain
+
+env: {}
+  # Add any extra environment variables here
+  # logging__level: "info"

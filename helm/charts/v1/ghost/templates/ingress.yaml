@@ -13,12 +13,12 @@ spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
-  {{- if .Values.ingress.tls.enabled }}
+  {{- if .Values.ingressTLS.enabled }}
   tls:
     - hosts:
         - {{ .Values.ingress.host | quote }}
-      {{- if .Values.ingress.tls.secretName }}
-      secretName: {{ .Values.ingress.tls.secretName }}
+      {{- if .Values.ingressTLS.secretName }}
+      secretName: {{ .Values.ingressTLS.secretName }}
       {{- else }}
       secretName: {{ include "app.fullname" . }}-tls
       {{- end }}

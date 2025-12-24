@@ -51,17 +51,39 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Return input as JSON.
+Create the name of the service account to use
 */}}
-{{- define "app.return_json" }}
-  {{- . | toJson }}
+{{- define "app.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "app.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name }}
+{{- end }}
 {{- end }}
 
 {{/*
-Create environment variables based on environment.
+Ghost URL - defaults to https://<ingress.host> if not specified
 */}}
-{{- define "app.env" -}}
-{{- if .Values.env }}
-{{- include "app.return_json" .Values.env }}
-{{- end -}}
-{{- end -}}
+{{- define "app.ghostUrl" -}}
+{{- if .Values.ghost.url }}
+{{- .Values.ghost.url }}
+{{- else }}
+{{- printf "https://%s" .Values.ingress.host }}
+{{- end }}
+{{- end }}
+
+{{/*
+Ghost Admin URL - optional, for separate admin domain
+*/}}
+{{- define "app.ghostAdminUrl" -}}
+{{- if .Values.ghost.adminUrl }}
+{{- .Values.ghost.adminUrl }}
+{{- end }}
+{{- end }}
+
+{{/*
+MariaDB host - follows subchart naming convention: <release>-<subchart>
+*/}}
+{{- define "app.mariadbHost" -}}
+{{- printf "%s-mariadb" .Release.Name }}
+{{- end }}
