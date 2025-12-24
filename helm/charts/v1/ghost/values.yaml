@@ -1,0 +1,42 @@
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 2368
+
+image:
+  repository: ghost
+  tag: 6.10.3-alpine3.23
+  pullPolicy: IfNotPresent
+
+persistence:
+  size: 10Gi
+
+mariadb:
+  enabled: true
+  auth:
+    database: "ghost"
+    username: "ghost"
+    existingSecret: "ghost-mariadb-secret"
+    secretKeys:
+      rootPasswordKey: "mariadb-root-password"
+      userPasswordKey: "mariadb-password"
+  persistence:
+    size: 10Gi
+
+ingress:
+  host: "blog.example.com"
+
+env:
+  NODE_ENV: "production"
+  url: "https://{{ .Values.ingress.host }}"
+  admin__url: ""
+  database__client: "mysql"
+  database__connection__host: '{{ include "app.fullname" . }}-mariadb'
+  database__connection__user: "{{ .Values.mariadb.auth.username }}"
+  database__connection__database: "{{ .Values.mariadb.auth.database }}"
+  tinybird__tracker__endpoint: "https://{{ .Values.ingress.host }}/.ghost/analytics/api/v1/page_hit"
+  tinybird__tracker__datasource: "analytics_events"
+  tinybird__stats__endpoint: "https://api.tinybird.co"

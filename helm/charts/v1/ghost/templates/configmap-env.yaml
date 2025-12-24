@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-env" (include "app.fullname" .) | trunc 63 | trimSuffix "-" }}
+data:
+  {{- $env := include "app.env" . | fromJson }}
+  {{- if $env }}
+  {{- range $key, $value := $env }}
+  {{- if $value }}
+  {{ $key }}: {{ tpl (toString $value) $ | quote }}
+  {{- end }}
+  {{- end }}
+  {{- end }}

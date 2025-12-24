@@ -1,0 +1,10 @@
+apiVersion: v2
+name: ghost
+version: 1.0.0
+AppVersion: "6.10.3"
+description: Helm chart for Ghost CMS
+dependencies:
+  - name: mariadb
+    version: 0.10.1
+    repository: "oci://registry-1.docker.io/cloudpirates"
+    condition: mariadb.enabled
